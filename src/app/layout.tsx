@@ -31,6 +31,7 @@ export default function RootLayout({
       >
         <Navbar />
         <main className="min-h-full pt-16">{children}</main>
+
         <Footer />
       </body>
     </html>

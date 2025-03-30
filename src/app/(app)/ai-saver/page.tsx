@@ -109,7 +109,7 @@ export default function AISaver() {
       >
         <div className="lg:col-span-2 space-y-6 sm:space-y-8">
           <motion.div
-            whileHover={{ scale: 1.005 }}
+            whileHover={{ scale: 1.001 }}
             className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl border border-gray-100 dark:border-gray-700"
           >
             <div className="flex items-center gap-3 mb-4 sm:mb-6">

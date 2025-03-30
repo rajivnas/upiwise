@@ -15,9 +15,7 @@ function TestimonialItem({
         isReverse ? "md:flex-row-reverse" : ""
       }`}
     >
-      {/* Testimonial Card */}
       <div className="relative p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 max-w-xl w-full">
-        {/* Quotation Mark */}
         <div className="text-4xl absolute -top-4 left-6 text-blue-100 dark:text-blue-900/50">
           &ldquo;
         </div>
@@ -27,7 +25,6 @@ function TestimonialItem({
         </p>
       </div>
 
-      {/* Author Profile */}
       <div
         className={`flex items-center gap-4 ${
           isReverse ? "md:flex-row-reverse" : ""
@@ -53,7 +50,7 @@ function TestimonialItem({
 
 export function Testimonials() {
   return (
-    <section className="py-20 bg-gray-50 dark:bg-gray-900">
+    <section className="py-20 bg-gray-50/40 dark:bg-gray-900">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-4">
