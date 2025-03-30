@@ -29,50 +29,54 @@ async function getAllMetadata(): Promise<BlogPostMeta[]> {
 
   try {
     const files = await fs.readdir(postsDirectory);
-    const validFiles = files.filter((file) => file.endsWith(".md"));
 
-    const posts = await Promise.all(
-      validFiles.map(async (file) => {
-        const slug = file.replace(/\.md$/, "");
-        const content = await fs.readFile(
-          path.join(postsDirectory, file),
-          "utf8"
-        );
-        const { data } = matter(content);
+    console.log("[Posts] Directory contents:", files);
 
-        return {
-          slug,
-          title: data.title || "Untitled Post",
-          date: data.date || new Date().toISOString(),
-          category: data.category || "General",
-          excerpt: data.excerpt || "",
-        };
+    const validPosts = await Promise.all(
+      files.map(async (file) => {
+        if (!file.endsWith(".md")) return null;
+
+        try {
+          const slug = file.replace(/\.md$/, "");
+          const content = await fs.readFile(
+            path.join(postsDirectory, file),
+            "utf8"
+          );
+          const { data } = matter(content);
+
+          return {
+            slug,
+            title: data.title || "Untitled Post",
+            date: data.date || new Date().toISOString(),
+            category: data.category || "General",
+            excerpt: data.excerpt || "",
+          };
+        } catch (error) {
+          console.error(`Error processing file ${file}:`, error);
+          return null;
+        }
       })
     );
 
+    // Filter out null entries and duplicates
+    const posts = validPosts.filter(Boolean) as BlogPostMeta[];
     const slugs = new Set<string>();
-    const duplicates = posts.filter((post) => {
+    const cleanPosts = posts.filter((post) => {
       const exists = slugs.has(post.slug);
-      slugs.add(post.slug);
-      return exists;
+      if (!exists) slugs.add(post.slug);
+      return !exists;
     });
 
-    if (duplicates.length > 0) {
-      throw new Error(
-        `Duplicate slugs: ${duplicates.map((d) => d.slug).join(", ")}`
-      );
-    }
-
-    metaCache = posts.sort(
+    metaCache = cleanPosts.sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
     lastCacheUpdate = Date.now();
 
-    console.log("Posts loaded:", metaCache.length);
+    console.log("[Posts] Loaded successfully:", metaCache.length);
     return metaCache;
   } catch (error) {
-    console.error("Posts loading error:", error);
-    console.log("Posts directory path:", postsDirectory);
+    console.error("[Posts] Critical error:", error);
+    console.log("[Posts] Resolved directory:", postsDirectory);
     return [];
   }
 }
