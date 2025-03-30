@@ -4,7 +4,7 @@ import fs from "fs/promises";
 import path from "path";
 import matter from "gray-matter";
 
-const postsDirectory = path.join(process.cwd(), "src", "PostsData");
+const postsDirectory = path.join(process.cwd(), "postsdata");
 
 export interface BlogPostMeta {
   slug: string;
