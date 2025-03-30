@@ -6,6 +6,7 @@ import matter from "gray-matter";
 
 const postsDirectory = path.join(process.cwd(), "postsdata");
 
+// Properly exported interfaces
 export interface BlogPostMeta {
   slug: string;
   title: string;
@@ -23,38 +24,49 @@ let lastCacheUpdate = 0;
 const CACHE_DURATION = 60 * 1000;
 
 async function getAllMetadata(): Promise<BlogPostMeta[]> {
-  if (Date.now() - lastCacheUpdate < CACHE_DURATION) {
+  if (Date.now() - lastCacheUpdate < CACHE_DURATION && metaCache.length > 0) {
     return metaCache;
   }
 
   try {
     const files = await fs.readdir(postsDirectory);
-    const mdFiles = files.filter((file) => file.endsWith(".md"));
 
-    metaCache = await Promise.all(
-      mdFiles.map(async (file) => {
-        const slug = file.replace(/\.md$/, "");
-        const filePath = path.join(postsDirectory, file);
-        const content = await fs.readFile(filePath, "utf8");
-        const { data } = matter(content);
+    const posts = await Promise.all(
+      files.map(async (file) => {
+        if (!file.endsWith(".md")) {
+          console.log(`Skipping non-markdown file: ${file}`);
+          return undefined; // Use undefined instead of null
+        }
 
-        return {
-          slug,
-          title: data.title || "Untitled Post",
-          date: data.date || new Date().toISOString(),
-          category: data.category || "General",
-          excerpt: data.excerpt || "",
-        };
+        try {
+          const slug = file.replace(/\.md$/, "");
+          const filePath = path.join(postsDirectory, file);
+          const content = await fs.readFile(filePath, "utf8");
+          const { data } = matter(content);
+
+          return {
+            slug,
+            title: data.title || "Untitled Post",
+            date: data.date || new Date().toISOString(),
+            category: data.category || "General",
+            excerpt: data.excerpt || "",
+          };
+        } catch (error) {
+          console.error(`Error processing file ${file}:`, error);
+          return undefined;
+        }
       })
     );
 
-    metaCache.sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
+    metaCache = posts
+      .filter((post): post is BlogPostMeta => !!post)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
     lastCacheUpdate = Date.now();
     return metaCache;
   } catch (error) {
     console.error("Error loading posts:", error);
+    metaCache = [];
     return [];
   }
 }
@@ -74,6 +86,7 @@ export async function getPost(slug: string): Promise<BlogPost> {
       excerpt: data.excerpt || "",
     };
   } catch (error) {
+    console.error(`Error loading post ${slug}:`, error);
     throw new Error(`Post not found: ${slug}`);
   }
 }
