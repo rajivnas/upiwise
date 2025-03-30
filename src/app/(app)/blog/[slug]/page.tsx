@@ -6,7 +6,7 @@ import "./post-styles.css";
 import Link from "next/link";
 
 export async function generateMetadata({ params }: any): Promise<Metadata> {
-  const { slug } = params;
+  const { slug } = await params;
   const post = await getPost(slug);
 
   return {
@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
 }
 
 export default async function PostPage({ params }: any) {
-  const { slug } = params;
+  const { slug } = await params;
   const post = await getPost(slug);
 
   const recentPosts = await getPaginatedPosts(1, 3);
