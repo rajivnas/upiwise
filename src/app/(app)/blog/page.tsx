@@ -3,8 +3,11 @@
 import { useEffect, useState, useCallback } from "react";
 import BlogPostCard from "@/components/ui/blog/BlogPostCard";
 import FeaturedPost from "@/components/ui/blog/FeaturedPost";
-import { getPaginatedPosts, getTotalPostCount } from "@/lib/getPosts";
-import type { BlogPostMeta } from "@/lib/getPosts";
+import {
+  BlogPostMeta,
+  getPaginatedPosts,
+  getTotalPostCount,
+} from "@/lib/getPosts";
 import { Skeleton } from "@/components/ui/blog/Skeleton";
 import { ArrowUp } from "lucide-react";
 
