@@ -75,7 +75,6 @@ export default async function PostPage({ params }: any) {
             ))}
           </div>
         </section>
-        {/* he  */}
       </div>
     </div>
   );
