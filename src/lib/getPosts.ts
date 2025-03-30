@@ -4,7 +4,7 @@ import fs from "fs/promises";
 import path from "path";
 import matter from "gray-matter";
 
-const postsDirectory = path.join(process.cwd(), "src/app", "PostsData");
+const postsDirectory = path.join(process.cwd(), "src", "PostsData");
 
 export interface BlogPostMeta {
   slug: string;
@@ -20,19 +20,19 @@ export interface BlogPost extends BlogPostMeta {
 
 let metaCache: BlogPostMeta[] = [];
 let lastCacheUpdate = 0;
-const CACHE_DURATION = 0;
+const CACHE_DURATION = 60 * 1000;
 
 async function getAllMetadata(): Promise<BlogPostMeta[]> {
-  if (Date.now() - lastCacheUpdate < CACHE_DURATION) {
+  if (Date.now() - lastCacheUpdate < CACHE_DURATION && metaCache.length > 0) {
     return metaCache;
   }
 
   try {
     const files = await fs.readdir(postsDirectory);
-    const mdFiles = files.filter((file) => file.endsWith(".md"));
+    const validFiles = files.filter((file) => file.endsWith(".md"));
 
     const posts = await Promise.all(
-      mdFiles.map(async (file) => {
+      validFiles.map(async (file) => {
         const slug = file.replace(/\.md$/, "");
         const content = await fs.readFile(
           path.join(postsDirectory, file),
@@ -59,7 +59,7 @@ async function getAllMetadata(): Promise<BlogPostMeta[]> {
 
     if (duplicates.length > 0) {
       throw new Error(
-        `Duplicate slugs found: ${duplicates.map((d) => d.slug).join(", ")}`
+        `Duplicate slugs: ${duplicates.map((d) => d.slug).join(", ")}`
       );
     }
 
@@ -69,19 +69,10 @@ async function getAllMetadata(): Promise<BlogPostMeta[]> {
     lastCacheUpdate = Date.now();
 
     console.log("Posts loaded:", metaCache.length);
-    console.log("Directory contents:", mdFiles);
-
     return metaCache;
   } catch (error) {
-    console.error("Error loading posts:", error);
-
-    try {
-      const dirContents = await fs.readdir(process.cwd());
-      console.log("Current directory contents:", dirContents);
-      console.log("Resolved posts path:", postsDirectory);
-    } catch (dirError) {
-      console.error("Directory read error:", dirError);
-    }
+    console.error("Posts loading error:", error);
+    console.log("Posts directory path:", postsDirectory);
     return [];
   }
 }
