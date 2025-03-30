@@ -29,13 +29,13 @@ async function getAllMetadata(): Promise<BlogPostMeta[]> {
 
   try {
     const files = await fs.readdir(postsDirectory);
-    const posts = await Promise.all(
-      files.map(async (file) => {
+    const mdFiles = files.filter((file) => file.endsWith(".md"));
+
+    metaCache = await Promise.all(
+      mdFiles.map(async (file) => {
         const slug = file.replace(/\.md$/, "");
-        const content = await fs.readFile(
-          path.join(postsDirectory, file),
-          "utf8"
-        );
+        const filePath = path.join(postsDirectory, file);
+        const content = await fs.readFile(filePath, "utf8");
         const { data } = matter(content);
 
         return {
@@ -48,20 +48,7 @@ async function getAllMetadata(): Promise<BlogPostMeta[]> {
       })
     );
 
-    const slugs = new Set<string>();
-    const duplicates = posts.filter((post) => {
-      const exists = slugs.has(post.slug);
-      slugs.add(post.slug);
-      return exists;
-    });
-
-    if (duplicates.length > 0) {
-      throw new Error(
-        `Duplicate slugs found: ${duplicates.map((d) => d.slug).join(", ")}`
-      );
-    }
-
-    metaCache = posts.sort(
+    metaCache.sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
     lastCacheUpdate = Date.now();
